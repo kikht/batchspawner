@@ -270,6 +270,8 @@ class BatchSpawnerBase(Spawner):
     @gen.coroutine
     def start(self):
         """Start the process"""
+        if self.port != 0:
+            self.user.server.port = self.port
         job = yield self.submit_batch_script()
 
         # We are called with a timeout, and if the timeout expires this function will
