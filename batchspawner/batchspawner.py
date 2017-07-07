@@ -270,6 +270,7 @@ class BatchSpawnerBase(Spawner):
     @gen.coroutine
     def start(self):
         """Start the process"""
+        self.log.info("Setting port {0}".format(self.port))
         if self.port != 0:
             self.user.server.port = self.port
         job = yield self.submit_batch_script()
