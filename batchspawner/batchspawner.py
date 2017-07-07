@@ -32,7 +32,6 @@ from traitlets import (
     Instance, Integer, Unicode, Float, Dict, default
 )
 
-from jupyterhub.utils import random_port
 from jupyterhub.spawner import set_user_setuid
 
 @gen.coroutine
@@ -271,9 +270,6 @@ class BatchSpawnerBase(Spawner):
     @gen.coroutine
     def start(self):
         """Start the process"""
-        if not self.user.server.port:
-            self.user.server.port = random_port()
-            self.db.commit()
         job = yield self.submit_batch_script()
 
         # We are called with a timeout, and if the timeout expires this function will
