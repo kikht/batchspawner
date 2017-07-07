@@ -79,6 +79,8 @@ class BatchSpawnerBase(Spawner):
     # override default since batch systems typically need longer
     start_timeout = Integer(300).tag(config=True)
 
+    port = Integer(0).tag(config=True)
+
     # override default server ip since batch jobs normally running remotely
     ip = Unicode("0.0.0.0", help="Address for singleuser server to listen at").tag(config=True)
 
