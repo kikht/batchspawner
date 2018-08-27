@@ -181,6 +181,14 @@ class BatchSpawnerBase(Spawner):
              "and self.job_id as {job_id}."
         ).tag(config=True)
 
+    batch_query_num_tries = Integer(5, \
+        help="Number of attempts to get job state before giving up"
+        ).tag(config=True)
+
+    batch_query_interval = Float(0.5, \
+        help="Time to wait after job state query fails"
+        ).tag(config=True)
+
     @gen.coroutine
     def read_job_state(self):
         if self.job_id is None or len(self.job_id) == 0:
@@ -191,14 +199,18 @@ class BatchSpawnerBase(Spawner):
         subvars['job_id'] = self.job_id
         cmd = self.batch_query_cmd.format(**subvars)
         self.log.debug('Spawner querying job: ' + cmd)
-        try:
-            out = yield run_command(cmd)
-            self.job_status = out
-        except Exception as e:
-            self.log.error('Error querying job ' + self.job_id)
-            self.job_status = ''
-        finally:
-            return self.job_status
+        for ntry in range(self.batch_query_num_tries):
+            try:
+                out = yield run_command(cmd)
+                self.job_status = out
+                return self.job_status
+            except Exception as e:
+                self.log.warn('Error querying job ' + self.job_id + ', will try again')
+                yield gen.sleep(self.batch_query_interval * 2**ntry)
+
+        self.log.error('Error querying job ' + self.job_id + ', giving up')
+        self.job_status = ''
+        return self.job_status
 
     batch_cancel_cmd = Unicode('',
         help="Command to stop/cancel a previously submitted job. Formatted like batch_query_cmd."
