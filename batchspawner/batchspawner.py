@@ -210,6 +210,7 @@ class BatchSpawnerBase(Spawner):
 
         self.log.error('Error querying job ' + self.job_id + ', giving up')
         self.job_status = ''
+        yield self.cancel_batch_job()
         return self.job_status
 
     batch_cancel_cmd = Unicode('',
